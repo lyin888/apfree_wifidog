@@ -24,7 +24,7 @@
   @brief Main loop
   @author Copyright (C) 2004 Philippe April <papril777@yahoo.com>
   @author Copyright (C) 2004 Alexandre Carmel-Veilleux <acv@miniguru.ca>
-  @author Copyright (C) 2016 Dengfeng Liu <liudengfeng@kunteng.org>
+  @author Copyright (C) 2016 Dengfeng Liu <liudf0716@gmail.com>
  */
 
 #include "common.h"
@@ -65,11 +65,6 @@ static pthread_t tid_mqtt_server;
 static int signals[] = { SIGTERM, SIGQUIT, SIGHUP, SIGINT, SIGPIPE, SIGCHLD, SIGUSR1 };
 static struct event *sev[sizeof(signals)/sizeof(int)];
 
-static void *
-wd_zeroing_malloc(size_t howmuch){ 
-	return calloc (1, howmuch); 
-}
-
 static void 
 openssl_init(void)
 { 
@@ -83,10 +78,14 @@ openssl_init(void)
 	ERR_load_crypto_strings();
 	SSL_load_error_strings();
 	OpenSSL_add_all_algorithms();
-#endif
 	debug (LOG_DEBUG, "Using OpenSSL version \"%s\"\nand libevent version \"%s\"\n",
 		  SSLeay_version (SSLEAY_VERSION),
 		  event_get_version ());
+#else
+	debug (LOG_DEBUG, "Using OpenSSL version \"%s\"\nand libevent version \"%s\"\n",
+		  OpenSSL_version (OPENSSL_VERSION),
+		  event_get_version ());
+#endif
 }
 
 static void

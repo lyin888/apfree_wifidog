@@ -22,7 +22,7 @@
 /** @file util.h
     @brief Misc utility functions
     @author Copyright (C) 2004 Philippe April <papril777@yahoo.com>
-    @author Copyright (C) 2016 Dengfeng Liu <liudengfeng@kunteng.org>
+    @author Copyright (C) 2016 Dengfeng Liu <liudf0716@gmail.com>
 */
 
 #ifndef _UTIL_H_
@@ -47,14 +47,10 @@ int is_valid_ip(const char *);
 
 int is_valid_mac(const char *);
 
-int is_socket_valid(int );
-
 int wd_connect(int, const struct sockaddr *, socklen_t, int);
 
 float get_cpu_usage();
 
 void wd_sleep(unsigned, unsigned );
-
-int setnonblock(int );
 
 #endif                          /* _UTIL_H_ */

@@ -25,7 +25,7 @@
   @author Copyright (C) 2004 Philippe April <papril777@yahoo.com>
   @author Copyright (C) 2007 Benoit Grégoire
   @author Copyright (C) 2007 David Bird <david@coova.com>
-  @author Copyright (C) 2016 Dengfeng Liu <liudengfeng@kunteng.org>
+  @author Copyright (C) 2016 Dengfeng Liu <liudf0716@gmail.com>
 
  */
 /* Note that libcs other than GLIBC also use this macro to enable vasprintf */
@@ -204,11 +204,13 @@ ev_http_resend(struct evhttp_request *req)
 static int
 process_already_login_client(struct evhttp_request *req, const char *mac, const char *remote_host)
 {
+	if (!mac || !remote_host) return 0;
+	
     int flag = 0;
-
+	
     LOCK_CLIENT_LIST();
     t_client *clt = client_list_find_by_mac(mac);
-    if(clt && strcmp(clt->ip, remote_host) != 0) { // the same client get different ip
+    if (clt && strcmp(clt->ip, remote_host) != 0) { // the same client get different ip
         fw_deny(clt);
         free(clt->ip);
         clt->ip = safe_strdup(remote_host);
@@ -225,6 +227,8 @@ process_already_login_client(struct evhttp_request *req, const char *mac, const 
 static int
 process_wired_device_pass(struct evhttp_request *req, const char *mac)
 {
+	if (!mac) return 0;
+	
     if (br_is_device_wired(mac)) {
         debug(LOG_DEBUG, "wired_passed: add %s to trusted mac", mac);
         if (!is_trusted_mac(mac))
@@ -242,7 +246,7 @@ process_wired_device_pass(struct evhttp_request *req, const char *mac)
 void
 ev_http_callback_404(struct evhttp_request *req, void *arg)
 {
-    if (!is_online()){
+    if (!is_online()) {
         ev_http_reply_client_error(req, INTERNET_OFFLINE);
         return;
     }  
@@ -252,12 +256,13 @@ ev_http_callback_404(struct evhttp_request *req, void *arg)
         return;
     } 
 
-    char *remote_host;
+    char *remote_host = NULL;
     uint16_t port;
     evhttp_connection_get_peer(evhttp_request_get_connection(req), &remote_host, &port);
+	if (remote_host == NULL) return;
 
     char mac[MAC_LENGTH] = {0};
-    if(!br_arp_get_mac(remote_host, mac)) {
+    if (!br_arp_get_mac(remote_host, mac)) {
         evhttp_send_error(req, 200, "Cant get client's mac by its ip");
         return;
     }
@@ -273,10 +278,10 @@ ev_http_callback_404(struct evhttp_request *req, void *arg)
         return;
     }
     
-    if(!config->bypass_apple_cna && process_apple_wisper(req, mac, remote_host, redir_url, config->bypass_apple_cna))
+    if (!config->bypass_apple_cna && process_apple_wisper(req, mac, remote_host, redir_url, config->bypass_apple_cna))
         goto END;
 
-    if(config->js_redir)
+    if (config->js_redir)
         ev_http_send_js_redirect(req, redir_url);
     else
         ev_http_send_redirect(req, redir_url, "Redirect to login page");
@@ -340,6 +345,7 @@ ev_http_send_redirect_to_auth(struct evhttp_request *req, const char *url_fragme
         auth_server->authserv_path, url_fragment);
 
     ev_http_send_redirect(req, url, text);
+	free(url);
 } 
 
 /**
@@ -458,7 +464,6 @@ ev_http_callback_temporary_pass(struct evhttp_request *req, void *arg)
         debug(LOG_INFO, "Temporary passed %s", mac);
         fw_set_mac_temporary(mac, 0);	
         evhttp_send_reply(req, HTTP_OK, "OK", NULL);
-        //httpdOutput(r, "startWeChatAuth();");
     } else {
         debug(LOG_INFO, "Temporary pass called without  MAC given");
         evhttp_send_error(req, HTTP_OK, "MAC need to be specified");
@@ -530,8 +535,8 @@ ev_send_http_page(struct evhttp_request *req, const char *title, const char *mes
         evhttp_send_error(req, HTTP_INTERNAL, NULL);
         return;
     }
+	
     close(fd);
-
     evhttp_send_reply(req, HTTP_OK, "OK", buffer);
     evbuffer_free(buffer);
 }

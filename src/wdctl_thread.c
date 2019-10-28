@@ -22,7 +22,7 @@
 /** @file wdctl_thread.c
     @brief Monitoring and control of wifidog, server part
     @author Copyright (C) 2004 Alexandre Carmel-Veilleux <acv@acv.ca>
-	@author Copyright (C) 2016 Dengfeng Liu <liudengfeng@kunteng.org>
+	@author Copyright (C) 2016 Dengfeng Liu <liudf0716@gmail.com>
 */
 
 #define _GNU_SOURCE
@@ -770,7 +770,6 @@ wdctl_add_online_client(struct bufferevent *fd, const char *args)
 
     const char *mac  = json_object_get_string(mac_jo);
     const char *ip	 = json_object_get_string(ip_jo);
-	const char *name = json_object_get_string(name_jo);
     if (!is_valid_mac(mac) || !is_valid_ip(ip) || !is_trusted_mac(mac))
         goto OUT;
 
